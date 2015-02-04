@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Edit Emergency Contacts at {{ object.name }} {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}	
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li><a href="{% url 'organizations:list_school' %}">Manage Schools</a></li>
+		<li class="active">Edit Emergency Contacts at {{object.name}}</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<div class="char-left-label">
+				<b>Characters Remaining (160 max.):</b> <span class="char-left"></span><br>
+			</div>
+
+			<div class="page-btns">
+				<input type="submit" class="btn btn-primary" value="Update Emergency Contact Info.">
+			</div>
+		</form>
+
+		<b>Note: This page is still under construction, but the purpose is to allow us to enter/edit desginated contact persons for each school. 
+			When students text HELPINFO on their phone, the Reply defined above will be sent to them. If they follow suit by texting us CONTACT, 
+			the designated contact person at the school will be notified of it along with the student's phone number.</b>
+	</div>
+
+<script>
+$(document).ready(function(){
+
+	$('textarea[name="help_reply"]').keyup(function(){
+		cur_msg = $(this).val();
+		update_char_left(cur_msg);
+	});
+
+});
+</script>
+{% endblock %}

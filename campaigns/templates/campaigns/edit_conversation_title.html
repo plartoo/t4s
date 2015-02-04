@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Edit Conversation Title {% endblock %}
+
+{% block content %}	
+	<div id="container">
+		<ol class="breadcrumb">
+		  <li><a href="/">Home</a></li>
+		  <li><a href="{% url 'campaigns:list' %}">Manage and Send Conversations</a></li>
+		  <li class="active">Edit Conversation Title</li>
+		</ol>
+
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<div class="page-btns">
+				<input type="submit" class="btn btn-primary" value="Update Conversation Title">
+			</div>
+		</form>
+	</div>
+
+<style>
+.page-btns{
+	text-align: center;
+	margin: 20px 0px 20px 0px;
+}
+
+.page-btns input{
+	font-size: 18px;
+}
+</style>
+{% endblock %}

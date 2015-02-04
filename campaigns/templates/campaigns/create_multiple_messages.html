@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Create Conversation {% endblock %}
+{% block extrajs %}
+<script src="{% static 'underscore/underscore-min.js' %}"></script>
+<script src="{% static 'backbone/backbone-min.js' %}"></script>
+<script src="{% static 'backgrid/backgrid.min.js' %}"></script>
+<script>
+var default_options = [];  // global
+var row_height;
+var row_count = 0;
+{% if cur_msg %}
+	{% for option in cur_msg.options.all %}
+		default_options.push({
+			'id': '{{ option.id }}',
+			'child_msg_id': '{{ option.child_msg.id }}',
+			'keyword': $('<span>').html('{{ option.trigger_keyword }}').text(),
+			'separator': $('<span>').html('{{ option.separator }}').text(),
+			'option_text': $('<span>').html("{{ option.option_content}}").text(), 
+			'reply': $('<span>').html("{{ option.child_msg.content }}").text()
+			//'our-response': $('<span>').html("{{ option.child_msg.content }}").text(), 
+			});
+		row_count += 1;
+	{% endfor %}
+{% endif %}
+</script>
+<script src="{% static 'js/backgrid.js' %}"></script>
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'backgrid/backgrid.min.css' %}" type="text/css"/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/common.css' %}">
+<link rel="stylesheet" href="{% static 'css/create_mm.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li><a href="{% url 'campaigns:list' %}">Manage and Send Conversations</a></li>
+		<li class="active">Create Multiple Message Conversation</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+		<form method="post">
+			{% csrf_token %}
+
+			{% if campaign %}
+				<b> Conversation Title:</b>
+				{{ campaign.title }}
+				<input type="hidden" name="title" size="160" value="{{ campaign.title }}"/>
+			{% else %}
+				<p><b> Step 1: Give this conversation a name</b> (You'll use this to find it later.)</p>
+				<b> Conversation Title:</b>
+				<input name="title" type="text" size="160">
+				{{ form.title.errors }}
+			{% endif %}
+			<br><br><br>
+
+			<p><b> Step 2: Compose the prompting message we will send.</b></p>
+			<textarea class="form-control" name="cur_msg" placeholder="Type your prompting message here" rows="2" cols="50">{{ cur_msg.content }}</textarea>
+			{{ form.cur_msg.errors }}
+			<br><br>
+
+			<div class="jumbotron">
+				<h4><b>Live Message Preview</b> (Message will look like this when you send it):</h4>
+				<div class="msg-preview">
+					 <span id="cur-msg"></span><br><br>
+				</div>
+				<div class="char-left-label">
+					<b>Characters Remaining (160 max.):</b> <span class="char-left"></span><br>
+				</div>
+			</div>
+
+			<p><b> Step 3: Compose the keyword triggers (options) you’ll offer, how the options appear in the message, and what our reply back will be.</b></p>
+			<span id="note">
+				<p>If you enter an asterisk &#42; as keyword, user can reply anything they want (i.e. in addition to the other keywords you definied), we'll respond them with the corresponding custom reply you defined.</p>
+				<p style='color:#D43F3A'>Avoid any variation (i.e. lower/uppercase) of keywords that start with 'quit', 'contact', 'back', 'help' and 'frequency' because they are reserved for the system.</p>
+			</span>
+
+			<div id="backgrid-table" class="backgrid-container">
+			</div>
+
+			<div class="grid-btns">
+				<button class="btn btn-success" id="add-row-btn" type="button"> <span class="glyphicon glyphicon-plus"></span>Add New Option</button>
+				<button class="btn btn-primary" id="save-btn" type="button">Save Current Options</button>
+			</div>
+
+			<div class="page-btns">
+				{% if parent_msg %}
+					<button id="back-btn" class="btn btn-primary" type="button"> 
+						<span class="glyphicon glyphicon-backward"></span><br>Back to parent (previous) message </button>
+				{% endif %}
+				<button id="done-btn" class="btn btn-primary" type="button"><span class="glyphicon glyphicon-forward"></span><br>Done for now. Return to list of conversations</button>
+			</div>
+		</form>
+	</div>
+
+<script>
+function raise_warning_if_empty(str, warning_msg){
+	if (str.length == 0){
+		alert(warning_msg);
+	}
+}
+
+// This is here because we cannot use Django tag in js file separate from template
+var add_option_url = '{% url "campaigns:create_multiple_msg_conv" %}';
+
+var CHAR_LIMIT = 160;
+function update_char_left(cur_msg){
+	var $char_left = $('.char-left');
+	var char_remaining = CHAR_LIMIT - cur_msg.length;
+	
+	$char_left.text(char_remaining);
+
+	if (char_remaining < 0){
+		$('.char-left').addClass('warning');
+	}
+	else{
+		$('.char-left').removeClass('warning');
+	}
+}
+
+function update_live_msg(){
+	var msg = '';
+	msg += $('textarea[name="cur_msg"]').val();
+	
+	var data = grid.collection.toJSON();
+	for (var i=0; i < data.length; i++) {
+		if (data[i]['keyword'] == '*'){
+			// CAUTION: Do NOT remove space before trigger keyword here
+			msg += ' ' + data[i]['separator'] + data[i]['option_text'];
+		}
+		else{
+			// CAUTION: Do NOT remove space before trigger keyword here
+			msg += ' ' + data[i]['keyword'] + data[i]['separator'] + data[i]['option_text'];
+		}
+	}
+
+	$('#cur-msg').text(msg);
+	
+	update_char_left(msg);
+}
+
+function submit(next_url, msg_id){
+	var title = $('input[name="title"]').val();
+	if (title.length == 0){
+		alert("Please enter conversation title.");
+		return;
+	}
+
+	var msg_content = $('textarea[name="cur_msg"]').val();
+	if (msg_content.length == 0){
+		alert("Please enter prompting message.");
+		return;
+	}
+
+	// Check if option content: is empty, or some necessary info is missing 
+	var data = grid.collection.toJSON();
+	
+	if (data.length == 0){
+		error_msg = "You have not created any option. If you plan to not have any option, we recommend you to create 'Single Message Conversation'. Otherwise, please add row(s) in the table for Step 3 and enter option(s)."; 
+		alert(error_msg);
+		return;
+	}
+	
+	for (var i=0; i < data.length; i++) {
+		if (!(data[i]['keyword'] && data[i]['reply'])){ // data[i]['option_text'] can be blank; the other two MUST not be empty
+			 alert("You must enter content for 'KEYWORD' and 'Our reply back' columns in each row. Or you should remove the corresponding option row.");
+			 return;
+		}
+	}
+
+	var data_str = JSON.stringify(data);
+ 	$.ajax({
+		url : "{% url 'campaigns:create_multiple_msg_conv' %}?cam_id={{ cam_id }}&msg_id={{ msg_id }}",
+		type : 'POST', 
+		dataType : "json",
+		data: {options : data_str, cur_msg: msg_content, title: title},
+		success : function(data) {
+			if (data.result == 'success'){
+				if (msg_id){
+					location.href = next_url + '?cam_id=' + data.cam_id + '&msg_id=' + msg_id;
+				}else{
+					location.href = next_url + '?cam_id=' + data.cam_id + '&msg_id=' + data.cur_msg_id;
+				}
+
+			}else{
+				alert("Error happened in posting Message option data to server.");
+			}
+		}
+	});
+}// end of submit()
+
+function update_grid_height(){
+	new_height = row_height * (row_count + 1);
+	$('#backgrid-table').height(new_height); // see backgrid.js for row_height
+}
+
+$(document).ready(function(){
+	row_height = $('#backgrid-table tr').height() + 18; // added extra to look good
+	update_grid_height();
+
+	$('#done-btn').click(function(){
+		submit('{% url "campaigns:list" %}');
+	});
+
+	$('#save-btn').click(function(){
+		submit('{% url "campaigns:create_multiple_msg_conv" %}');
+	});
+
+	$('#back-btn').click(function(){
+		submit('{% url "campaigns:create_multiple_msg_conv" %}', '{{ parent_msg.id }}');
+	});
+
+	$('#add-row-btn').on('click', function(event){
+		row_count++;
+		update_grid_height();
+		grid.insertRow([{keyword: "", separator: '', option_text: "", reply: ""}]);
+	});
+
+	// For live message preview
+	update_live_msg();
+	$('textarea[name="cur_msg"]').keyup(update_live_msg);
+	
+	// Ref: http://stackoverflow.com/questions/12279236/backbone-js-collection-events
+	grid.collection.on("change reset add remove", update_live_msg, grid);
+	
+});
+</script>	
+{% endblock %}

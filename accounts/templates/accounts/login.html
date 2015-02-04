@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Login {% endblock %}
+
+{% block content %}
+	<div id="container">
+		<form method="post">
+			{% csrf_token %}
+
+			<label>Phone Number (or User Name):</label>
+			{{ form.username.errors }}
+			<input name="username" type="text" size="40">
+
+			<div class='input-blck'>
+				<label>Password:</label>
+				{{ form.password.errors }}
+				<input name="password" type="password" size="40">
+			</div>
+			
+			<div class="page-btns">
+				{{ form.non_field_errors }}
+				<input class='btn btn-default btn-primary login-btn' type="submit" value="Login">
+				<a href="{% url 'accounts:register' %}"> New User? </a>
+			</div>
+		</form>
+	</div>
+
+<style>
+.navbar-collapse.collapse{
+	display: none !important;
+}
+label{
+    display: inline-block;
+    float: left;
+    clear: left;
+    width: 100%;
+	margin: 20px 0px 5px 0px;
+}
+.input-blck input{
+  display: inline-block;
+  float: left;
+}
+
+.page-btns{
+    float: left;
+    width: 100%;
+	margin: 25px 0px;
+}
+.login-btn{
+	font-size: 18px;
+	width: 140px;
+	height: 45px;
+}
+.errorlist{
+	color: #D9534F;
+	list-style: square;
+}
+</style>
+{% endblock %}

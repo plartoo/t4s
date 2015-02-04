@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Create Conversation {% endblock %}
+{% block extrajs %}
+<script src="{% static 'slickgrid/lib/firebugx.js' %}"></script>
+<script src="{% static 'jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.min.js' %}"></script>
+<script src="{% static 'slickgrid/lib/jquery.event.drag-2.2.js' %}"></script>
+<script src="{% static 'slickgrid/slick.core.js' %}"></script>
+<script src="{% static 'slickgrid/plugins/slick.cellrangedecorator.js' %}"></script>
+<script src="{% static 'slickgrid//plugins/slick.cellrangeselector.js' %}"></script>
+<script src="{% static 'slickgrid/plugins/slick.cellselectionmodel.js' %}"></script>
+<script src="{% static 'slickgrid/slick.formatters.js' %}"></script>
+<script src="{% static 'slickgrid/slick.editors.js' %}"></script>
+<script src="{% static 'slickgrid/slick.grid.js' %}"></script>
+<script src="{% static 'bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}"></script>
+
+
+<script src="{% static 'js/slickgrid.js' %}"></script>
+
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'slickgrid/slick.grid.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'jquery-ui-1.10.4.custom/css/smoothness/jquery-ui-1.10.4.custom.min.css' %}" type="text/css"/>
+
+{% endblock %}
+{% block content %}	
+
+	<div id="container">
+	{% if parent_msg %}
+		<div id="parent-msg"><span id=label><b>Beginning of Message: </b></span><input id="parent-msg-content" value="{{ parent_msg.content }}"/></div>
+	{% else %}
+		<div id="parent-msg"><span id=label><b>Beginning of Message: </b></span><input id="parent-msg-content" size="180"/></div>
+	{% endif %}
+	</div>
+	<br>
+	<div id="myGrid" style=""></div>
+	<br>
+	<div id="update-char">
+		<b>Entire Message (including options that will be sent to students):</b> <span id="cur-msg"></span><br><br>
+		<b>Characters Remaining (160 max.):</b> <span id="char-left"></span><br>
+		<b> Phyo TODO: Add examples below to explain users about what the columns means and what's feasible</b>
+	</div>
+
+	</span>	<br><br>
+	{% if messages %}
+	<ul>
+		
+		{% for msg in messages %}
+		{{ msg }}
+		{% endfor %}
+	</ul>
+	{% endif %}
+	<br><br>
+	<a href="{% url 'campaigns:conversation_messages' %}?cam_id={{ cam_id }}">Go back to Message List of this Campaign</a>
+	<button id="submit" class="btn btn-primary">Submit</button>
+
+<script>
+var grid;
+
+$(function () {
+	var data = [];
+	// {% url "campaigns:create_conversation" %}?cam_id={{ cam_id }}&msg_id={{ option.child_msg.id }}
+	{% if parent_msg %}
+	{% for option in parent_msg.options.all %}
+
+		data.push({
+			'option-id': '{{ option.id }}',
+			'keyword': $('<span>').html("{{ option.trigger_keyword }}").text(),		//'add-option-button': '<b>bbb</b>',
+			'separator': $('<span>').html("{{ option.separator}}").text(), 
+			'option-text': $('<span>').html("{{ option.option_content}}").text(), 
+			'our-response': $('<span>').html("{{ option.child_msg.content }}").text(), });
+			//'freely-respond': {% if option.respond_freely %} true {% else %} false {% endif %}});
+	{% endfor %}
+	{% endif %}
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+
+    grid.setSelectionModel(new Slick.CellSelectionModel());
+
+    grid.onAddNewRow.subscribe(function (e, args) {
+      var item = args.item;
+      grid.invalidateRow(data.length);
+      data.push(item);
+      grid.updateRowCount();
+      grid.render();
+    });
+    
+    shown_alert_for_star = false;
+    function update_cur_msg(e, args){
+    	is_star_included = false;
+		// Note: This is the failed attempt to catch the '*' in smarter way. But SlickGrid doesn't invoke update_cur_msg if the new row is not visited from its first column, so this is not a reliable way to detect '*' in smart way 
+    	// if (args && (args.cell == 2) && (args.item.keyword == '*')){	// this is checking if we're updating Trigger Keyword column
+			// is_star_included = true;
+			// alert("You typed in '*' as trigger keyword. Be warned that it means the users can reply anything they want AND no option will be included in the final message sent (that is, only 'Beginning of Message' will be sent).");
+    	// }
+
+		// Note: As a result of above, we will detect start in brute force fashion
+		// TODO: Refactor or fix this ugly code
+		for (var i=0; i < grid.getData().length; i++){
+			if (grid.getDataItem(i).keyword == '*'){
+				is_star_included = true;
+				if (!shown_alert_for_star){
+					alert("You typed in '*' as trigger keyword. Be warned that it means the users can reply anything they want AND no option will be included in the final message sent (that is, only 'Beginning of Message' will be sent).");
+					shown_alert_for_star = true;
+				}
+				break;
+			}
+		}
+		
+    	complete_msg = '';    	
+		parent_msg = $('#parent-msg-content').val();
+		
+		data = grid.getData();
+		if (parent_msg.length == 0 || data.length == 0){
+			complete_msg += parent_msg;
+		}else{
+			complete_msg += parent_msg + ' ';
+		}
+		
+		if (!is_star_included) {
+			for (var i=0; i < data.length; i++){
+				trigger = data[i]['keyword'];			// IMPORTANT: trigger is padded with space by our app
+				separator = data[i]['separator'];		// NOTE: These keys 'separator', etc. are coming from slickgrid.js
+				option_content = data[i]['option-text'];
+				
+				if (data[i]['freely-respond']) {
+					complete_msg += ' OR ' + option_content + ' ';
+				} else {
+					complete_msg += trigger + separator + ' ' + option_content + ' '; 
+				}
+			}
+		}
+		
+		$('#cur-msg').text(complete_msg);
+		$('#char-left').text(160 - complete_msg.length);
+	}
+    grid.onCellChange.subscribe(update_cur_msg);
+    update_cur_msg();
+
+
+});
+ 
+
+$('#submit').click(function(){
+	var data = grid.getData();
+	for (var i=0; i < data.length; i++) {
+		if (!(data[i]['keyword'] && data[i]['separator'] && data[i]['option-text'] && data[i]['our-response'])){
+			 alert("You must enter data (even if it's a dummy character in case of '*' for trigger keyword) for every column of the table EXCEPT Option ID and Respond Freely.");
+			 return;
+		}
+	}
+
+	content = $('#parent-msg-content').val(); 
+	if (content == '') {
+		alert('Please provide parent message for this option.');
+		return;
+	}
+	var data_str = JSON.stringify(data);
+	
+ 	$.ajax({
+		url : "{% url 'campaigns:create_conversation' %}?cam_id={{ cam_id }}&msg_id={{ msg_id }}",
+		type : 'POST', 
+		dataType : "json",
+		data: {options : data_str, parent_msg_content: content},
+		success : function(data) {
+			if (data.result == 'success'){
+				msg_id = data.parent_msg_id;
+				location.href = location.origin + location.pathname + '?cam_id={{ cam_id }}&msg_id=' + msg_id; 
+
+			}else{
+				alert("Error happened in posting Message option data to server.");
+			}
+		}
+	});
+});
+
+</script>
+
+{% endblock %}
+
+	
+		
+	

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} {{headline}} {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+	<ol class="breadcrumb">
+	  <li><a href="/">Home</a></li>
+	  <li><a href="{% url 'organizations:list_group' %}">Manage Groups</a></li>
+	  <li class="active">Edit Group Membership</li>
+	</ol>
+
+	<div class="page-header">
+	  <h3>{{headline}}</h3>
+	</div>
+
+	<div id="container">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">Table of current group members</h3>
+			</div>
+			
+			<div class="table-responsive">
+				<table class="table table-bordered table-hover table-condensed">
+					<tr>
+							<th>Member Phone Number</th>
+							<th>School</th>
+							<th>Role</th>
+							<th>Actions</th>
+					</tr>
+					{% for person in all_users %}
+					<tr>
+							<td>
+								<a href="{% url 'accounts:user_profile' %}?username={{ person.user.username }}"> {{ person.get_formatted_phone_number }} </a>
+							</td>
+							<td>{{ person.school.name }}</td>
+							<td>{% if person.role %}{{ person.get_role_display }}{% else %}Advisor{% endif %}</td>
+							<td>
+								<a href="{% url 'organizations:remove_person' %}?group_id={{ group.id }}&user_id={{ person.user.id }}"> Remove From Group </a>
+							</td>
+					</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+
+		<br>
+		<h3> Select members from schools to be added to the group above:</h3>
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<b>Select School:</b><br>
+			<select id="schools" style="width: 600px">
+				<option value="">--------</option>
+				{% for school in schools %}
+					<option value="{{ school.id }}">{{ school.name }}</option>
+				{% endfor %}
+			</select>
+			<br><br>
+
+			<b>Select Members Below (Use Ctrl or Shift to select multiple):</b><br>
+			<select id="members" multiple="multiple" size="10" style="width: 600px">
+			</select>
+
+			<div class="page-btns">
+				<input type="submit" id="create-group" class="btn btn-primary" value="Add Selected Members to the Group Above">
+			</div>
+		</form>
+	</div>
+
+<style>
+.page-btns{
+	text-align: left;
+	margin-bottom: 30px;
+		
+}
+</style>
+
+<script src="{% static 'js/list_members_by_school.js' %}"></script>
+<script>
+	// Intercept and add the numbers into hidden value	
+	$("form").submit(function() {
+		var nums = [];
+		$( "#members option:selected" ).each(function() {
+			nums.push($(this).val());
+		});
+		$('#id_phone_numbers').val(nums.join(','));
+
+		return true;
+	});
+</script>
+{% endblock %}

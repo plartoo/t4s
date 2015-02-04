@@ -1,0 +1,37 @@
+<!doctype html>
+
+<head>
+	<meta charset="utf-8">
+	
+	<title>Message Composed by You So Far</title>
+
+	<!--link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/animate.css">
+	<link rel="stylesheet" href="css/styles.css"-->
+	
+</head>
+	
+<body>
+	
+	<div id="container">
+		
+		<ul>
+			{% for msg in object_list %}
+		    <li>{{ msg.created_at}} - {{ msg.content}} 
+		    	<a href="{% url 'smsmessages:update' pk=msg.id %}">Edit </a><br>
+		    	<a href="{% url 'smsmessages:delete' pk=msg.id %}" onclick="if(!confirm('Sure?')) return false;">Delete </a>
+		    	
+		    </li>
+			{% endfor %}
+		</ul>
+		
+	</div>
+	
+	
+	<script></script>
+</body>
+
+</html>
+
+
+

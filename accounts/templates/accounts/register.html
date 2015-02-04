@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Register {% endblock %}
+
+{% block content %}
+	<div id="container">
+		
+		{% with form.role.value as role %}
+			{% if not role or role == 'researcher' %}
+			<input type="radio" name="role" value="researcher" checked="checked" />
+			{% else %}
+			<input type="radio" name="role" value="researcher" />
+			{% endif %}
+			<span> Researcher </span>
+				
+			{% if role == 'student' %}
+			<input type="radio" name="role" value="student" checked="checked"/>
+			{% else %}
+			<input type="radio" name="role" value="student" />
+			{% endif %}
+			<span> Student </span>
+
+			{% if role == 'advisor' %}
+			<input type="radio" name="role" value="advisor" checked="checked"/>
+			{% else %}
+			<input type="radio" name="role" value="advisor" />
+			{% endif %}
+			<span> Advisor </span>
+
+			{% if not role or role == 'researcher' %}
+			<form id="researcher" method="post">
+			{{ form.errors }}
+			{% else %}
+			<form id="researcher" method="post" hidden>
+			{% endif %}
+	
+			{% csrf_token %}
+			<div class="form-group">
+				<label class="col-sm-2">User name:</label>
+				<div class="col-sm-10">
+					<input type="text" value="{{ form.username.value|default_if_none:'' }}" name="username" class="form-control">
+				</div>
+			</div>
+			Email (required): <input type="text" value="{{ form.email.value|default_if_none:'' }}" name="email"><br>
+			Phone (optional): <input type="text" value="{{ form.phone.value|default_if_none:'' }}" name="phone"><br>
+			Password: <input type="password" name="password"><br>
+			Re-type the password: <input type="password" name="password2"><br>
+			<input type="hidden" name="role" value="researcher">
+			<input type="submit" value="Register" >
+			</form>
+	
+			{% if role == 'student' %}
+			<form id="student" method="post">
+			{{ form.errors }}
+			{% else %}
+			<form id="student" method="post" hidden>
+			{% endif %}
+	
+			{% csrf_token %}
+			Phone: <input type="text"  value="{{ form.username.value|default_if_none:'' }}" name="username"><br>
+			First Name (optional): <input type="text" name="firstname"><br>
+			Last Name (optional): <input type="text" name="lastname"><br>
+			Email (optional): <input type="text" name="email"><br>
+			School: <select name="school">
+				{% for school in schools %}
+					<option value="{{ school.id }}"> {{ school.name }}</option>
+				{% endfor %}
+			</select><br>
+			Password: <input type="password" name="password"><br>
+			Re-type the password: <input type="password" name="password2"><br>
+			<span id='step-one'> Step 1: </span> <button type="button" data-form="student" class="verify btn btn-sm btn-primary">Send verification code to my phone</button>  
+			<input class="verify"  type="button" ><br> 
+			Verification code (sent via text): <input type="text" name="verification_code"><br>
+			<input type="hidden" name="role" value="student">
+			<div class="verify-label"></div>
+			Step 2: <input type="submit" value="Register">
+			</form>
+	
+			{% if role == 'advisor' %}
+			<form id="advisor" method="post">
+			{{ form.errors }}
+			{% else %}
+			<form id="advisor" method="post" hidden>
+			{% endif %}
+	
+			{% csrf_token %}
+			Phone: <input type="text"  value="{{ form.username.value|default_if_none:'' }}" name="username"><br>
+			First Name (optional): <input type="text" name="firstname"><br>
+			Last Name (optional): <input type="text" name="lastname"><br>
+			Email (optional): <input type="text" name="email"><br>
+			School: <select name="school">
+				{% for school in schools %}
+					<option value="{{ school.id }}"> {{ school.name }}</option>
+				{% endfor %}
+			</select><br>
+			Password: <input type="password" name="password"><br>
+			Re-type the password: <input type="password" name="password2"><br>
+			<span id='step-one'> Step 1: </span> <button type="button" data-form="advisor" class="verify btn btn-sm btn-primary">Send verification code to my phone</button> 
+			Verification code (sent via text): <input type="text" name="verification_code"><br>
+			<input type="hidden" name="role" value="advisor">
+			<div class="verify-label"></div>
+			Step 2: <input type="submit" value="Register">
+			</form>
+		{% endwith %}
+	</div>
+
+<script>
+	$("input:radio").click(function() {
+    	var role = $(this).val();
+    	$('form').hide();
+    	$('#'+role).show();
+	});
+
+	$(".verify").click(function() {
+		
+		var verify_button = $(this); 
+		var $form =$('#'+ verify_button.data('form'));
+		var phone_num = $form.children("input[name='username']").val();
+		$(this).attr("disabled", "disabled");	// disable for now
+		
+		// Phyo TODO: check phone number here later? Yes! otherwise, this ajax will go through and Twilio will err, and USER WILL NOT KNOW WHAT HAPPENED
+	  	$.ajax({
+		url : "{% url 'accounts:verify' %}",
+		dataType : "json",
+		data: {phonenum : phone_num},
+		success : function(data) {
+			if(data.sent) {
+				//$('.verify').hide();
+				$form.children('.verify-label').empty().append("<span>Please check your phone for verification code and type it in below to complete the registration process. </span>");
+				
+			//disable the button (for 1 minute)
+			}else{
+				verify_button.removeAttr("disabled");
+				$form.children('.verify-label').empty().append("<span>Sending verification code failed. Please make sure that your phone number is correct. </span>");
+			}
+		}
+		});
+	});
+</script>
+{% endblock %}

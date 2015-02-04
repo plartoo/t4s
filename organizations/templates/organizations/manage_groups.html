@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Campaigns queued by You to be sent out {% endblock %}
+
+{% block content %}	
+
+		<!--div id="group-{{ group.id }}"> <span>{{ group.name }}</span> </div-->
+		<select id="groups" name="groups" size=5>
+		{% for group in groups %}
+			<option value="{{ group.id }}"> {{ group.name }}</option>
+		{% endfor %}
+		</select>
+		<br>
+		<input type="button" value="Add Group">
+		<input type="button" value="Edit Group">
+		<input type="button" value="Delete Group">
+		
+		<select id="students" name="students" size=5>
+		</select>
+		<br>
+		<input type="button" value="Add Student">
+		<input type="button" value="Edit Student">
+		<input type="button" value="Delete Student">
+
+<script src="{% static 'js/utils.js' %}"></script>
+{% endblock %}

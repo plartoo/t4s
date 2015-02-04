@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% block title %} Create New Group {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}	
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li class="active">Create New Group</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>{{ name }} <!-- DO NOT revmove this tag. This is an exmaple of having a global constant. I'll use this later in refactoring-->
+
+	<div class="container">
+		<form method="post">
+			{% csrf_token %}
+			<p>
+			{% for field in form %}
+			{% if not field.is_hidden %}
+			{{ field.label_tag }}<br>
+			{% endif %}
+			{{ field }}
+			{% endfor %}
+			</p><br />
+
+			<b>Select School:</b><br>
+			<select id="schools">
+				<option value="">--------</option>
+				{% for school in schools %}
+					<option value="{{ school.id }}">{{ school.name }}</option>
+				{% endfor %}
+			</select>
+
+			<div id="selector">
+				<b>Select Members Below (Use Ctrl or Shift to select multiple):</b>
+				<br>
+
+				<div id="left_col">
+					<select id="members" multiple="multiple" size="10">
+					</select>
+				</div>
+				
+				<div id="mid_col">
+					<input class="btn btn-primary add-btn" type="button" id="select-member-button" value="Select Members >>">
+				</div>
+
+				<div id="right_col">
+
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<b>Preliminarily Selected Members</b>
+						</div>
+						<div class="panel-body">
+							<ol id="selected-members">
+							</ol>
+						</div>
+					</div>
+
+					<input class="btn btn-primary done-btn" id="create-group" type="submit" value="Create Group With Members in the List Above">
+				</div>
+				
+			</div>
+
+		</form>
+	</div>
+<style>
+.add-btn{
+	width: 140px;
+	height: 40px;
+}
+.done-btn{
+	font-size: 16px;
+}	
+</style>
+<script src="{% static 'js/list_members_by_school.js' %}"></script>
+<script>
+	// Ref: http://stackoverflow.com/questions/8053394/how-to-do-something-before-on-submit
+	$('form').submit(function() {
+		if (!$('#id_name').val()){
+			alert("The Name field must not be empty.");
+			return false;
+		}
+        return true; // return false to cancel form action
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% block title %} Update Group Name {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+{% endblock %}
+{% block content %}	
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li><a href="{% url 'organizations:list_group' %}">Manage Groups</a></li>
+		<li class="active">Update Group Name</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<div class="page-btns">
+				<input type="submit" class="btn btn-primary" value="Update Group Name">
+			</div>
+		</form>
+	</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Conversation with the Student: {{ phone_number }} {% endblock %}
+
+{% block content %}
+	<div id="container">
+		<ul>
+			{% for record in records %}
+		    <li>
+		    	{{ record.sender_num }} --> {{ record.receiver_num }}:  {{ record.content}} [{{ record.sent_at }}] 
+		    </li>
+			{% endfor %}
+		</ul>
+		
+	</div>
+{% endblock %}

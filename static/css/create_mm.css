@@ -1,0 +1,82 @@
+table input {
+	width: 100%;
+}
+
+#backgrid-table {
+   height: 60px; /*220px;*/
+}
+
+.backgrid-container{
+	border: 1px solid;
+}
+
+th{
+	text-align: center;
+}
+
+th.keyword, th.separator {
+	width: 50px;
+}
+
+th.option_text, th.reply {
+	width: 350px;
+}
+
+.backgrid-container > .string-cell{
+	vertical-align: middle !important;;
+}
+
+.msg-preview { /* Django provide class name for its errors */
+	font-size: 20px;
+	font-weight: bold;
+	text-align: center;
+}
+
+.char-left {
+	font-weight: bold;
+	color: blue;
+}
+
+.warning {
+	color: red;
+}
+
+.char-left-label {
+	margin-top: 5px;
+}
+
+.continue-btn, .remove-btn {
+	width: 130px;
+	height: 80px;
+	white-space: normal;
+/*	vertical-align: middle;
+	line-height: normal;*/
+}
+
+.grid-btns {
+	text-align: left;
+	margin: 20px 0px 20px 0px;
+}
+
+#save-btn, #add-row-btn {
+	width: 170px;
+	height: 35px;
+	text-align: center;
+}
+
+.page-btns{
+	text-align: center;
+	margin: 0px 0px 20px 0px;
+}
+
+#back-btn, #done-btn {
+	font-size: 18px;
+	width: 215px;
+	height: 100px;
+	white-space: normal;
+
+    -webkit-border-radius:15px/24px;
+    -moz-border-radius:15px/24px;
+    border-radius:15px/24px;
+    
+}

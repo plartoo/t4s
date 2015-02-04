@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load traverse_tree %}
+
+{% block title %} View Message Tree in Conversation Titled: {{ campaign.title }} {% endblock %}
+{% block content %}	
+	<div id="container">
+		<ol class="breadcrumb">
+		  <li><a href="/">Home</a></li>
+		  <li><a href="{% url 'campaigns:list' %}">Manage and Send Conversations</a></li>
+		  <li class="active">View Message Tree in Conversation Titled: {{ campaign.title }}</li>
+		</ol>
+
+		{% if campaign.root_message %}
+	 		{% tree_nodes campaign.root_message.id campaign.id %}
+	 	{% else %}
+	 		<a href="{% url 'campaigns:create_multiple_msg_conv' %}?cam_id={{ campaign.id }}">No message in this conversation. Add the first message in this conversation</a>
+	 	{% endif %} 
+
+		<br><br><br><br><br>
+		<b>Note: This page will be updated with a graphical representation of the message tree. That will happen when Phyo has time to do it.</b>
+	</div>
+<style>
+.action-btns{
+	display: block;
+}
+li{
+    list-style: none;
+}
+</style>
+{% endblock %}

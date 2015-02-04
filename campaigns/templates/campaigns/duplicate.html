@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Duplicate Conversation {% endblock %}
+
+{% block content %}	
+	<div id="container">
+		<ol class="breadcrumb">
+		  <li><a href="/">Home</a></li>
+		  <li><a href="{% url 'campaigns:list' %}">Manage and Send Conversations</a></li>
+		  <li class="active">Duplicate Conversation</li>
+		</ol>
+
+		<p><b> Edit the conversation title below</b> (if you want this duplicate conversation to have a different title from the original one):</p>
+
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+
+			<div class="page-btns">
+				<input type="submit" class="btn btn-primary" value="Duplicate Conversation">
+			</div>
+		</form>
+	</div>
+
+<style>
+.page-btns{
+	text-align: center;
+	margin: 20px 0px 20px 0px;
+}
+
+.page-btns input{
+	font-size: 18px;
+}
+</style>
+{% endblock %}

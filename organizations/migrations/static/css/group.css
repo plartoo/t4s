@@ -1,0 +1,31 @@
+/* Ref: http://stackoverflow.com/questions/9855800/side-by-side-div-and-site-centering */
+#schools{
+	width: 580px;
+}
+
+#selector{ /* NECESSARY */
+	width: 100%; /* Total screen width: 1170px in bootstrap*/
+	margin: 30px auto;
+	/*background-color: green;*/
+}
+
+#left_col, #mid_col, #right_col{
+	float: left;
+}
+
+#left_col, #members{
+	width: 460px;
+	margin: 5px 2px 0px 0px;
+	/*background-color:red;*/
+}
+
+#right_col{
+	width: 525px;
+	margin: 5px 2px 0px;
+	/*background-color:yellow;*/
+}
+
+#mid_col{
+	width: 140px;
+	margin: 50px 2px;
+}

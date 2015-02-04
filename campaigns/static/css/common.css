@@ -1,0 +1,24 @@
+/* For Help button */
+.glyphicon-question-sign{
+	font-size: 24px;
+}
+
+/* Error message */
+.errorlist{
+	color: #D9534F;
+	list-style: square;
+}
+
+/* Chars. Remaining message */
+.char-left {
+	font-weight: bold;
+	color: blue;
+}
+
+.warning {
+	color: red;
+}
+
+.char-left-label {
+	margin-top: 5px;
+}

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% block title %} Send Conversation Titled: {{campaign.title}} {% endblock %}
+{% block extrajs %}
+<script src="{% static 'bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+<link href="{% static 'bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+	<div id="container">
+		<ol class="breadcrumb">
+		  <li><a href="/">Home</a></li>
+		  <li><a href="{% url 'campaigns:list' %}">Manage and Send Conversations</a></li>
+		  <li class="active">Send Conversation Titled: {{campaign.title}}</li>
+		</ol>
+
+		<p><b> First Message in this Conversation (Titled: {{campaign.title}}) is shown below: </b> 
+			<blockquote class="bg-info">{{campaign.root_message.get_full_content}}</blockquote>
+		</p>
+		
+		<a href="{% url 'campaigns:conversation_messages' %}?cam_id={{ campaign.id }}">View message and options for final check (optional)</a>
+
+		<form action="" method="post">
+			{% csrf_token %}
+			<p> <!--Add hidden field to carry group ids back to form-->
+			{% for field in form %}
+				{% if field.is_hidden %}
+					{{ field }}
+				{% endif %}
+			{% endfor %}
+			</p>
+			<div id="selector">
+				{{ form.selected_group_ids.errors }}
+				<p><b>Step 1: Select ONE or MORE group(s) to receive this conversation (Use Ctrl or Shift to select multiple):</b></p>
+
+				<div id="left_col">
+				    <select id="members" class='select-box' multiple="multiple" size="15">
+						{% for group in groups %}f
+					    	<option value="{{ group.id }}"> {{ group.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div id="mid_col">
+					<input class="btn btn-primary add-btn" type="button" id="select-member-button" value="Select Members >>">
+				</div>
+
+				<div id="right_col">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<b>Preliminarily Selected Groups:</b>
+						</div>
+						<div class="panel-body">
+							<ol id="selected-members">
+							</ol>
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="form-group">
+				{{ form.launch_datetime.errors }}
+                <p><b>Step 2: Pick the date and time to launch the conversation:</b></p>
+                <div class="input-group date form_datetime col-md-4" data-date-format="dd MM yyyy - HH:ii p" data-link-field="dtp_input1">
+                    <input class="form-control" size="16" type="text" value="" readonly>
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>
+				</div>
+				<input type="hidden" id="dtp_input1" name="launch_datetime" value="" required/><br/>
+
+				<div class="page-btns">
+				    <input type="submit" class="btn btn-primary" value="Send Message to Selected Group(s)" />
+				</div>
+ 	        </div>
+
+		</form>
+	</div>
+
+<style>
+.page-btns{
+	text-align: left;
+	margin: 0px;
+
+}
+.form-group{
+	float: left;
+	width: 100%;
+	margin-top: 30px;
+}
+#mid_col{
+	margin: 50px 8px 0px 0px;
+}
+</style>
+<script>
+	function update_selected_numbers(){
+		var groups = [];
+		$('#selected-members li').each(function(){
+			groups.push($(this).data('group_id'));
+		});
+
+		$('#id_selected_group_ids').val(groups.join(','));
+	}
+
+	function already_been_added(new_group_id){
+		var existed = false;
+		$('#selected-members li').each(function(){
+			if (existed || new_group_id == $(this).data('group_id')){
+				existed = true;
+			}
+		});
+		return existed;
+	}
+
+	$('#select-member-button').click(function(){
+		$( "#members option:selected" ).each(function() {
+
+			if (already_been_added($(this).val())){
+				return;
+			}
+
+			//var $list = $('<li>').attr('class', 'list-group-item').data('phone', $(this).val()); // if we are to use bootstrap's list group
+			var $list = $('<li>').data('group_id', $(this).val()); // save phone number to custom data field first
+			var str = $(this).text() + ' [';
+			$list.text(str).append($('<a href="javascript:void(0);">').text('Remove'));
+			$list.find('a').after(']');
+			$('#selected-members').append($list);
+
+			update_selected_numbers();		
+		});
+	});
+	
+
+	$(document).on('click', '#selected-members li a', function(){
+		$(this).parent().remove();
+		update_selected_numbers();
+	});
+
+    $(".form_datetime").datetimepicker({
+        format: "dd MM yyyy - HH:ii P",
+        showMeridian: true,
+        autoclose: true,
+        todayBtn: true,
+        pickerPosition: "top-left",
+        minuteStep: 5,
+    });
+
+	$('form').submit(function() {
+		if ($('#id_selected_group_ids').val().length == 0){
+			alert("You must select at least one group to send this conversation.");
+			return false;
+		}
+
+		if ($('#dtp_input1').val().length == 0){
+			alert("You must select a time to send this conversation.");
+			return false;
+		}
+
+        return true; // return false to cancel form action
+    });
+</script>
+{% endblock %}	

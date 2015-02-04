@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Add/List of Advisors in {{school.name}} {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li><a href="{% url 'organizations:list_school' %}">Manage Schools</a></li>
+		<li class="active">Add/List Advisors in {{school.name}}</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+	<div id="container">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">List of Advisors in {{school.name}}</h3>
+			</div>
+
+			<div class="table-responsive">
+				<table class="table table-bordered table-hover">
+					<tr>
+							<th>Phone Number</th>
+							<th>Name</th>
+							<th>Actions</th>
+					</tr>
+					{% for advisor in advisors %}
+					<tr>
+							<td><a href="{% url 'accounts:user_profile' %}?username={{ advisor.user.username }}">
+									{{ advisor.get_formatted_phone_number }}
+								</a>
+							</td>
+							<td>{{ advisor.user.get_full_name }}</td>
+							<td>
+								<a href="{% url 'organizations:school_delete_advisor' advisor.user.id %}?school_id={{ advisor.school.id }}" onclick="if(!confirm('Are you sure you want to remove this advisor from the school?')) return false;"> Remove Advisor </a>
+							</td>
+					</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+
+		<br>
+		<h3> Type or paste comma-separated list of 10-11 digit phone numbers to add below.</h3>
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<div class="page-btns">
+				<input type="submit" class="btn btn-primary" value="Add Advisors (Phone Numbers) Above to This School">
+			</div>
+		</form>
+	</div>
+
+<style>
+.page-btns{
+	text-align: left;
+}
+</style>
+{% endblock %}

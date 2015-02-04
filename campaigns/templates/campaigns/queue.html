@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% load set_rand_var %}
+
+{% block title %} View Sent and Pending Conversations {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/common.css' %}">
+{% endblock %}
+
+{% block content %}	
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li><a href="{% url 'campaigns:list' %}">Manage and Send Conversations</a></li>
+		<li class="active">View Sent and Pending Conversations</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+		<form method="get" class="form-inline pull-right" role="form">
+			<b>Filter Results by: </b>
+			<div class="form-group">
+			    <label class="sr-only">Group</label>
+			    <select name="group">
+			    	<option value="all-group" > Group - All </option>
+			    	{% for g in groups %}
+			    		{% if g.id|upper == group %}
+			    		<option value="{{ g.id }}" selected="selected"> {{ g.name }}</option>
+			    		{% else %}
+			    		<option value="{{ g.id }}"> {{ g.name }}</option>
+			    		{% endif %}
+			    	{% endfor %}
+			    </select>
+			  </div>
+			  <div class="form-group">
+			    <label class="sr-only">Status</label>
+			    <select name='status'>
+			    	<option value="all-status" > Status - All </option>
+			    	{% for st  in statuses %}
+			    		{% if st.0 == status %}
+			    		<option value="{{ st.0 }}" selected="selected"> {{ st.1 }}</option>
+			    		{% else %}
+			    		<option value="{{ st.0 }}"> {{ st.1 }}</option>
+			    		{% endif %}
+			    	{% endfor %}
+			    </select>
+			  </div>
+			  <button type="submit" class="btn btn-default btn-primary">Filter Results</button>
+		</form>
+		<br><br>
+
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">List of Conversations Sent or Pending</h3>
+			</div>
+
+			<div class="table-responsive">
+				<table class="table table-bordered table-hover table-condensed">
+					<tr>
+							<td>Conversation Title</td>
+							<td>Queued By</td>
+							<td>Date Created</td>
+							<td>Launch Date and Time</td>
+							<td>Groups</td>
+							<td>Status</td>
+							<td>Actions</td>
+							
+					</tr>
+					{% for taskq in object_list %}
+					<tr>
+							<td title="{{ taskq.campaign.root_message.get_full_content }}">
+								<div class='panel-group' id='accordion'>
+									{% set_rand_var randnum = 1000 %}
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapse-{{ taskq.campaign.id }}-{{ randnum }}">
+										{{ taskq.campaign.title}}<span class="caret"></span>
+									</a>
+									<div id="collapse-{{ taskq.campaign.id }}-{{ randnum }}" class="panel-collapse collapse">
+										<div class="panel-body">{{ taskq.campaign.root_message.get_full_content }}</div>
+									</div>
+								</div>
+							</td>
+
+							<td>{{ taskq.created_by.username }}</td>
+							<td>{{ taskq.created_at}}</td>
+							<td>{{ taskq.launch_time}}</td>
+							<td>
+						    	{% for group in taskq.groups.all %}
+				    				<a href="{% url 'organizations:edit_group_member' %}?group_id={{ group.id }}" >{{ group.name }}</a>,<br>
+				    			{% endfor %}
+							</td>
+							<td>{{ taskq.status}}</td>
+							<td>
+								<a href="{% url 'smsmessages:taskq_conversation' %}?taskq_id={{ taskq.id }}"> Show All Reponses from Students for this Launch </a><span> | </span>
+								<br>
+								<a href="{% url 'campaigns:delete_taskq' %}?taskq_id={{ taskq.id }}" onclick="if(!confirm('Are you sure you want to remove/cancel this conversation launch?')) return false;">
+									Remove/Cancel this Conversation Launch</a>
+							</td>
+					</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+		{% include "pagination.html" %}
+	</div>
+{% endblock %}

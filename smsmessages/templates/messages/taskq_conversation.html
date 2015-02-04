@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Responses from Students for this Conversation {% endblock %}
+
+{% block content %}
+	<div id="container">
+		<table class="table table-border">
+			<tr>
+					<td>Student Number (button)</td>
+					<td>Prompting Message</td>
+					<td>Student's Response</td>
+					<td>Date Created</td>
+			</tr>
+			{% for r in records %}
+			<tr>
+					<td>
+						<a href="{% url 'smsmessages:view_conversation' %}?username={{ r.sender_num }}&taskq_id={{ r.task_queue.id }}"> {{ r.get_formatted_sender_number }} </a>
+					</td>
+					<td>{{ r.prompting_msg.get_full_content }}</td>
+					<td>{{ r.content}}</td>
+					<td>{{ r.created_at}}</td>
+			</tr>
+			{% endfor %}
+
+		</table>
+		
+	</div>
+{% endblock %}
+

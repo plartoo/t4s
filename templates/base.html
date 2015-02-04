@@ -1,0 +1,22 @@
+<!doctype html>
+
+{% load static from staticfiles %}
+<head>
+
+	<meta charset="utf-8">
+        <title>{% block title %}{% endblock %}</title>
+		<link rel="shortcut icon" type="image/x-icon" href="{{STATIC_URL}}favicon.ico"/>
+		<link rel="icon" type="image/x-icon" href="{{STATIC_URL}}favicon.ico"/>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+		<script src="{% static 'bootstrap-3.1.1/js/bootstrap.min.js' %}"></script>
+		<link href="{% static 'bootstrap-3.1.1/css/bootstrap.min.css' %}" rel="stylesheet">
+        {% block extracss %}{% endblock %}
+        {% block extrajs %}{% endblock %}
+    </head>
+    <body>
+        <div class="header">{% include "head.html" %}</div>
+        <div class="body container">{% block content %}{% endblock %}</div>
+        <div class="footer">{% include "foot.html" %}</div>
+    </body>
+</html>

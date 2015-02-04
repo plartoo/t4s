@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% block title %} Create School {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}	
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li class="active">Create School</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<div class="page-btns">
+				<input type="submit" class="btn btn-primary" value="Create New School">
+			</div>
+		</form>
+	</div>	
+{% endblock %}

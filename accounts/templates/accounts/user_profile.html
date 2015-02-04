@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} {{ person.user.username }}'s Profile {% endblock %}
+
+{% block content %}	
+{% if person.user == user %}
+<a href="{% url 'accounts:change_password' %}"> Change Password </a><br>
+{% endif %}
+<a href="{% url 'smsmessages:view_conversation' %}?username={{ person.user.username }}"> View {{ person.user.username }}'s Conversation History </a><br>
+<a href="{% url 'accounts:update_profile' %}?username={{ person.user.username }}"> Update {{ person.user.username }}'s Profile </a><br>
+
+{% endblock %}

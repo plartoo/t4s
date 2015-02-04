@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+{% block title %} List of Groups {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" href="{% static 'css/group.css' %}" type="text/css"/>
+{% endblock %}
+
+{% block content %}
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li class="active">Manage Groups</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">List of Groups</h3>
+			</div>
+
+			<div class="table-responsive">
+				<table class="table table-bordered table-hover">
+					<tr>
+							<th>Group Name</th>
+							<th>Created By</th>
+							<th>Date Created</th>
+							<th>Actions</th>
+					</tr>
+					{% for group in object_list %}
+					<tr>
+							<td>
+								{{ group.name}}
+							</td>
+							<td>{{ group.created_by.username}}</td>
+							<td>{{ group.created_at}}</td>
+							<td>
+								<a href="{% url 'organizations:edit_group_name' group.id %}"> Update Group Name </a><span> | </span>
+								<a href="{% url 'organizations:edit_group_member' %}?group_id={{ group.id }}"> Edit Group Membership </a><span> | </span>
+								<a href="{% url 'organizations:delete_group' group.id %}" onclick="if(!confirm('Removing the group means all PENDING conversations to this group will not be sent. Are you sure you want to delete this group?')) return false;"> Remove Group </a>
+							</td>
+					</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+		{% include "pagination.html" %}
+	</div>
+{% endblock %}

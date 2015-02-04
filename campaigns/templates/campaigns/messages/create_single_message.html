@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %} Create Conversation {% endblock %}
+{% block extrajs %}
+<script src="{% static 'js/common.js' %}"></script>
+{% endblock %}
+{% block extracss %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/common.css' %}">
+{% endblock %}
+
+{% block content %}
+	<ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li><a href="{% url 'campaigns:list' %}">Manage and Send Conversations</a></li>
+		<li class="active">Create Single Message Conversation</li>
+		<a style="float:right" class="help" target="_blank" href="#" data-toggle="tooltip" data-placement="top" title="Click here to see the instruction video.">
+			<span class="glyphicon glyphicon-question-sign"></span>
+		</a>
+	</ol>
+
+	<div id="container">
+		<form method="post">
+			{% csrf_token %}
+			
+			<p><b> Step 1: Give this conversation a name</b> (You'll use this to find it later.)</p>
+			<b> Conversation Title:</b>
+			<input name="title" type="text" size="160">
+			{{ form.title.errors }}
+			<br><br>
+			<p><b> Step 1: Compose your message prompt below:</b></p>
+			<textarea class="form-control" name="parent_msg" placeholder="Type your prompting message here" rows="2" cols="50"></textarea>
+			{{ form.parent_msg.errors }}
+
+			<div class="char-left-label">
+				<b>Characters Remaining (160 max.):</b> <span class="char-left"></span><br>
+			</div>
+
+			<br><br>
+			<p><b> Step 2: Your reply if person types something back (default reply is shown below):</b></p>
+			<textarea class="form-control" name="reply_msg" placeholder="Type your custom reply for message above (no more than 160 chars.)" rows="2" cols="50">Thanks for your message! We'll be in touch again.</textarea>
+			{{ form.reply_msg.errors }}
+			<div class="char-left-label">
+				<b>Characters Remaining (160 max.):</b> <span class="char-left"></span><br>
+			</div>
+
+			<div class="page-btns">
+				<input class="btn btn-primary btn-lg done-btn" type="submit" value="Done">
+			</div>
+		</form>
+	</div>
+
+<style>
+.errorlist{ /* Django provide class name for its errors */
+	color: red;
+	list-style: square;
+}
+.char-left{
+	font-weight: bold;
+	color: blue;
+}
+.warning {
+	color: red;
+}
+.char-left-label{
+	margin-top: 5px;
+}
+.page-btns{
+	text-align: center;
+	margin: 20px 0px 20px 0px;
+}
+.done-btn{
+	font-size: 18px;
+	width: 215px;
+	height: 50px;
+}
+</style>
+
+<script>
+var CHAR_LIMIT = 160;
+$(document).ready(function(){
+	// Update character remaining
+	$('textarea').keyup(function(){
+		var $char_left = $(this).next().find('.char-left');
+		var char_remaining = CHAR_LIMIT - $(this).val().length;
+		$char_left.text(char_remaining);
+		if (char_remaining < 0){
+			$('.char-left').addClass('warning');
+		}
+		else{
+			$('.char-left').removeClass('warning');
+		}
+	});
+
+});
+</script>	
+{% endblock %}
